@@ -42,7 +42,7 @@ Make sure the battery terminals can't be shorted if you store or transport the p
 
 ## Schematic
 
-![schematic](img/schematic.png)
+![schematic](./img/schematic.png)
 
 This is it. All three pushbutton switches connect to a common ground. The battery connects to the battery terminals on the XIAO board. I used some hot-melt adhesive to secure the battery wires to the board after soldering.
 
@@ -94,6 +94,6 @@ I didn't want to add more than just the button switches to my project, so the en
 
 ## Assembly
 
-![bottom](img/bottom.png)
+![bottom](./img/bottom.png)
 
 This isn't going to be a product. Mainly it needs to be stable enough to try out, and provide a way to test the firmware. The top is a piece of 3/16" Lexan sheet, an off-cut from making some window well covers for my house. The sides are scrap wood. Pro tip: I drill large holes in sheet materials with a Unibit, which is a stepped drill bit with multiple diameters in one bit. It's pretty inexpensive, leaves a very smooth hole, and doesn't "grab" when it cuts through to the other side of the workpiece.
