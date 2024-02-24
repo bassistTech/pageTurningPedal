@@ -4,9 +4,13 @@ Francis Deck, 8/1/2023
 
 ![top](img/top.png)
 
+![2button](img/2buttonPedal.png)
+
 ## Project status
 
 Not ready for prime time. I've uploaded the source code file, but the documentation is under construction.
+
+In addition to the original pedal, I built one with 2 buttons (and a recessed power button). I'm on the fence about which one I prefer.
 
 I re-designed the circuit becuse the old one, based on an ESP32 chip, had a roughly 2 hour battery life on a 300 mAh LiPo.
 
