@@ -29,11 +29,11 @@ Warning about ISO C++ forbidding a string constant seems to be OK.
 #define PG_UP 1 // Typically turn back by one page
 #define PG_DN 2 // Typically go forward by one page
 #define F11 4 // Gets my PDF reader app in and out of full page mode
-#define ALL_BUTTONS 7 // Used for controlling power-up and -down
+#define ALL_BUTTONS PG_UP + PG_DN + F11 // Used for controlling power-up and -down
 #define BATTERY 6 // used to get battery condition
 #define ENOUGH 1*60*60*1000 // Timeout converted to milliseconds
 
-char NAME[] = "PTP003\0"; // This needs to be a unique name
+char NAME[] = "PTP003\0"; // This needs to be a unique name if you have more than one
 
 int checkButtons(){
   /*

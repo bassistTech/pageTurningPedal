@@ -1,15 +1,14 @@
 /* 
 Bluetooth Page Turning Pedal
-Francis Deck, 7/30/2023
+Francis Deck, 10/17/2024
 MIT License
 
-This is new version for iPads, with new paddle-style buttos
+This version comes after some feedback from family members who have used
+the pedal. For now I've settled on 2 main buttons, plus a power button
+hidden under the pedal. Also, the pedal should emit a signal when the button
+is pressed, not when it's released.
 
-Hardware: Seeed XIAO nRF52840 microcontroller board with pushbutton
-switches connected from pins 2, 3, and 4 to ground. Small LiPo "bag
-battery" connected to battery terminals on the back of the board.
-
-More documentation to come. This circuit simulates a 3 button Bluetooth
+More documentation to come. This circuit simulates a 2 button Bluetooth
 keyboard flipping pages in a PDF reader, typically for reading sheet
 music on a tablet device.
 
@@ -30,53 +29,11 @@ Warning about ISO C++ forbidding a string constant seems to be OK.
 #define NEXT_KEY KEY_DOWN_ARROW
 #define PREV_KEY KEY_UP_ARROW
 
-#define PREV 1 // Typically turn back by one page
-#define NEXT 2 // Typically go forward by one page
-#define POWER 4 // Checks battery power
-#define ALL_BUTTONS 7 // Used for controlling power-up and -down
-#define BATTERY 6 // used to get battery condition
-#define ENOUGH 1*60*60*1000 // Timeout converted to milliseconds
+#define timeout_ms 1*60*60*1000 // Timeout converted to milliseconds
 
 char NAME[] = "PTP002\0"; // This needs to be a unique name
 
-int checkButtons(){
-  /*
-  Checks all 3 buttons, returns a binary indicating one or more
-  buttons pressed at a time. The function provides de-bounce and allows
-  for the fact that the buttons won't all be pressed exactly at once.
-
-  The function is non blocking, meaning it will immediately return zero
-  if no buttons are being pressed.
-  */
-
-  int result = 0;
-  int buttons = 0;
-  int oldResult;
-  bool firstTime = true;
-
-  while(1) {
-    oldResult = result;
-    // form binary representation of button state
-    buttons = (!digitalRead(PREV_PIN)) | (!digitalRead(NEXT_PIN) << 1) | (!digitalRead(POWER_PIN) << 2);
-    if (buttons == 0) {
-      // Don't bother with de-bounce if no buttons were pressed
-      if (!firstTime) delay(10); // de-bounce
-      firstTime = false;
-      digitalWrite(LED_GREEN, LOW);
-      break;
-    }
-    digitalWrite(LED_GREEN, HIGH);
-    if (buttons != oldResult) {
-      // Any change in the button status generates a new de-bounce delaly
-      delay(10); // de-bounce
-      result |= buttons;
-      oldResult = buttons;
-    }
-  }
-  return result;
-}
-
-void buttonISR() {
+void wakeUp() {
   /*
   One of the buttons must be arbitrarily attached to an ISR so that
   pressing all 3 buttons wakes the device up out of sleep mode. But
@@ -146,7 +103,7 @@ void setup() {
   pinMode(NEXT_PIN, INPUT_PULLUP_SENSE);
   pinMode(POWER_PIN, INPUT_PULLUP_SENSE);
 
-  attachInterrupt(digitalPinToInterrupt(POWER_PIN), buttonISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(POWER_PIN), wakeUp, FALLING);
 
   // Enable battery voltage monitor
 
