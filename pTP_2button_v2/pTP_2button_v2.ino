@@ -19,6 +19,8 @@ into a state where it has to be forced back into bootloader mode by
 double-clicking the Reset button.
 
 Warning about ISO C++ forbidding a string constant seems to be OK.
+
+Chose Tools --> Board --> Seeed Nrf52 Boards --> 
 */
 
 #include <BLE52_Mouse_and_Keyboard.h>
@@ -29,16 +31,30 @@ Warning about ISO C++ forbidding a string constant seems to be OK.
 #define NEXT_KEY KEY_DOWN_ARROW
 #define PREV_KEY KEY_UP_ARROW
 
-#define timeout_ms 1*60*60*1000 // Timeout converted to milliseconds
+#define timeout_ms 1*60*60*1000 // Timeout 60 min converted to ms
+#define debounce_ms 50 // Button debounce delay
 
 char NAME[] = "PTP002\0"; // This needs to be a unique name
 
+int checkButton(int pin, int key) {
+  if (!digitalRead(pin)) {
+    if (key != 0) {
+      Keyboard.press(key);
+      Keyboard.release(key);
+    }
+    delay(debounce_ms);
+    while (!digitalRead(pin));
+    delay(debounce_ms);
+    return 1;
+  }
+  else return 0;
+}
+
 void wakeUp() {
   /*
-  One of the buttons must be arbitrarily attached to an ISR so that
-  pressing all 3 buttons wakes the device up out of sleep mode. But
-  the ISR doesn't actually need to do anything because buttons are
-  being polled in normal "awake" operation
+  The power button needs to be attached to an ISR in order to wake
+  up the device out of sleep mode, but the ISr doesn't need to
+  do anything.
   */
 }
 
@@ -95,7 +111,7 @@ void setup() {
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_BLUE, OUTPUT);
 
-  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_RED, HIGH); // active low
   digitalWrite(LED_GREEN, HIGH);
   digitalWrite(LED_BLUE, HIGH);
 
@@ -112,24 +128,25 @@ void setup() {
   digitalWrite(VBAT_ENABLE, LOW);
   
   // TODO need to improve wake-up button behavior, for now 
-
-  if (checkButtons() != POWER) {
+  if (!checkButton(POWER_PIN, 0)) {
     gotoSleep();
   }
 
-  checkBattery();
+  // checkBattery();
 
   Keyboard.begin(NAME);
 
-  while(!Keyboard.isConnected()) { 
+  while(!Keyboard.isConnected()) {
+    digitalWrite(LED_GREEN, HIGH);
     // Blinking blue LED while it tries to connect
-    if (checkButtons() == POWER) gotoSleep();
+    if (checkButton(POWER_PIN, 0)) 
+      gotoSleep();
     digitalWrite(LED_BLUE, LOW);
     delay(100);
     digitalWrite(LED_BLUE, HIGH);
     delay(100);
   };
-
+  // Green light indicates connection is good
   digitalWrite(LED_GREEN, LOW);
   digitalWrite(LED_RED, HIGH);
 }
@@ -137,29 +154,11 @@ void setup() {
 void loop() {
   // Timeout
   static int time0 = millis();
-  if (millis() - time0 > ENOUGH) gotoSleep();
+  if (millis() - time0 > timeout_ms) 
+    gotoSleep();
   
   // Button based "user interface", should be self-explanatory
-  int buttons = checkButtons();
-  if (buttons != 0) time0 = millis();
-  switch (buttons) {
-    case PREV:
-      Keyboard.press(PREV_KEY); //hold down the shift was KEY_PAGE_UP
-      Keyboard.release(PREV_KEY);//release the shift
-      break;
-    case NEXT:
-      Keyboard.press(NEXT_KEY); //hold down the shift
-      Keyboard.release(NEXT_KEY);//release the shift
-      break;
-    //case PG_UP + PG_DN:
-    //  Keyboard.press(KEY_F11);
-    //  Keyboard.release(KEY_F11);
-    //  break;
-    case POWER:
-      gotoSleep();
-      break;
-    case BATTERY:
-      checkBattery();
-      break;
-  }
+  if (checkButton(PREV_PIN, PREV_KEY)) time0 = millis();
+  if (checkButton(NEXT_PIN, NEXT_KEY)) time0 = millis();
+  if (checkButton(POWER_PIN, 0)) gotoSleep();
 }
